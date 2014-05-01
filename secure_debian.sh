@@ -16,7 +16,8 @@ passwd
 #remove all non-default users
 cat /etc/passwd | cut -d: -f1 > current-users.txt
 
-############pull necessary-users.txt
+#pull the necessary-users.txt file
+wget https://raw.githubusercontent.com/lodge93/blueteam/master/necessary-users.txt
 
 #compare the two user files and create an output file of users to remove
 comm -23 <(sort current-users.txt) <(sort necessary-users.txt) > users-to-remove.txt
