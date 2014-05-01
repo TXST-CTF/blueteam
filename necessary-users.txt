@@ -28,4 +28,3 @@ speech-dispatcher
 rtkit
 saned
 Debian-gdm
-user
