@@ -30,11 +30,8 @@ do
 done <users-to-remove.txt
 
 #add a new regular user
-useradd blueteam
-su blueteam
-echo "changing the blueteam user password..."
-passwd
-exit
+echo "changing blueteam user password..."
+adduser --quite --gecos blueteam blueteam
 
 #lock down the sudoers file
 echo "root    ALL=(ALL:ALL) ALL" > /etc/sudoers
