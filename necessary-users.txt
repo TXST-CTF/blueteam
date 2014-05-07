@@ -28,3 +28,4 @@ speech-dispatcher
 rtkit
 saned
 Debian-gdm
+blueteam
