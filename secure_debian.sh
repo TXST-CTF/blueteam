@@ -29,6 +29,13 @@ do
 	userdel -rf $USER
 done <users-to-remove.txt
 
+#add a new regular user
+useradd blueteam
+sudo blueteam
+echo "changing the blueteam user password..."
+passwd
+exit
+
 #lock down the sudoers file
 echo "root    ALL=(ALL:ALL) ALL" > /etc/sudoers
 chmod 000 /etc/sudoers
