@@ -31,7 +31,7 @@ done <users-to-remove.txt
 
 #add a new regular user
 useradd blueteam
-sudo blueteam
+su blueteam
 echo "changing the blueteam user password..."
 passwd
 exit
