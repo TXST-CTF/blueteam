@@ -9,6 +9,9 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+#upgrade the passwd command
+apt-get upgrade passwd
+
 #change root password
 echo "changing the root password..."
 passwd
@@ -22,16 +25,16 @@ wget https://raw.githubusercontent.com/lodge93/blueteam/master/necessary-users.t
 #compare the two user files and create an output file of users to remove
 comm -23 <(sort current-users.txt) <(sort necessary-users.txt) > users-to-remove.txt
 
+#add a new regular user
+echo "changing blueteam user password..."
+adduser --quiet --gecos blueteam blueteam
+
 #remove users that were not in the necessary-users file
 while read USER
 do
 	echo "removing user $USER"
 	userdel -rf $USER
 done <users-to-remove.txt
-
-#add a new regular user
-echo "changing blueteam user password..."
-adduser --quiet --gecos blueteam blueteam
 
 #lock down the sudoers file
 echo "root    ALL=(ALL:ALL) ALL" > /etc/sudoers
