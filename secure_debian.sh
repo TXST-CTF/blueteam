@@ -29,12 +29,7 @@ comm -23 <(sort current-users.txt) <(sort necessary-users.txt) > users-to-remove
 echo "changing blueteam user password..."
 adduser --quiet --gecos blueteam blueteam
 
-#remove users that were not in the necessary-users file
-while read USER
-do
-	echo "removing user $USER"
-	userdel -rf $USER
-done <users-to-remove.txt
+
 
 #lock down the sudoers file
 echo "root    ALL=(ALL:ALL) ALL" > /etc/sudoers
