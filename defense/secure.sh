@@ -16,13 +16,21 @@ echo $OS
 VERSION=$(lsb_release -sc | awk '{print tolower($0)}')
 echo $VERSION
 
+# Temporarily configure DNS servers. 
+echo 'nameserver 8.8.8.8' > /etc/resolv.conf
+echo 'nameserver 8.8.4.4' >> /etc/resolv.conf
+
 # Run the version of the script for ubuntu.
 if [ $OS == 'ubuntu' ]; then
 	# Fix file repositories
 	mv /etc/apt/sources.list /etc/apt/sources.list.backup
 	touch /etc/apt/sources.list
-	echo "deb http://mirrors.rit.edu/ubuntu/ $VERSION main" >> /etc/apt/sources.list
-	echo "deb-src http://mirrors.rit.edu/ubuntu/ $VERSION main" >> /etc/apt/sources.list
+	echo "deb http://mirrors.us.kernel.org/ubuntu/ $VERSION main" > /etc/apt/sources.list
+	echo "deb-src http://mirrors.us.kernel.org/ubuntu/ $VERSION main" >> /etc/apt/sources.list
+	echo "deb http://mirrors.us.kernel.org/ubuntu/ $VERSION-security main" >> /etc/apt/sources.list
+    
+    # Update apt-get with the new sources.
+    apt-get update
 
 	# Reinstall passwd command and change root password.
 	apt-get --reinstall install -y passwd
@@ -32,14 +40,11 @@ if [ $OS == 'ubuntu' ]; then
 	## http://serverfault.com/questions/208347/how-do-i-list-all-users-with-root
 
 	# Reinstall crucial software.
-	apt-get install --only-upgrade bash
-	apt-get install --only-upgrade openssl
+	apt-get --reinstall install -y bash
+	apt-get --reinstall install -y openssl
 	apt-get --reinstall install -y coreutils
 	apt-get --reinstall install -y vim
 	apt-get --reinstall install -y wget
-
-	# Update all software
-	apt-get update
 fi
 
 # Lock down the sudoers file.
@@ -53,7 +58,8 @@ chattr +i /etc/crontab
 echo "" > /etc/anacrontab
 chattr +i /etc/anacrontab
 
-
+# Check programs that have root privliges
+#find / -perm -04000
 
 
 ######### check dns servers
