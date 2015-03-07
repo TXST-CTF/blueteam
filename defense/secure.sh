@@ -24,7 +24,6 @@ echo 'nameserver 8.8.4.4' >> /etc/resolv.conf
 if [ $OS == 'ubuntu' ]; then
 	# Fix file repositories
 	mv /etc/apt/sources.list /etc/apt/sources.list.backup
-	touch /etc/apt/sources.list
 	echo "deb http://mirrors.us.kernel.org/ubuntu/ $VERSION main" > /etc/apt/sources.list
 	echo "deb-src http://mirrors.us.kernel.org/ubuntu/ $VERSION main" >> /etc/apt/sources.list
 	echo "deb http://mirrors.us.kernel.org/ubuntu/ $VERSION-security main" >> /etc/apt/sources.list
@@ -36,9 +35,6 @@ if [ $OS == 'ubuntu' ]; then
 	apt-get --reinstall install -y passwd
 	passwd
 
-	# Check for root users by group and UID
-	## http://serverfault.com/questions/208347/how-do-i-list-all-users-with-root
-
 	# Reinstall crucial software.
 	apt-get --reinstall install -y bash
 	apt-get --reinstall install -y openssl
@@ -48,18 +44,67 @@ if [ $OS == 'ubuntu' ]; then
 fi
 
 # Lock down the sudoers file.
+chattr -i /etc/sudoers
 echo "root    ALL=(ALL:ALL) ALL" > /etc/sudoers
 chmod 000 /etc/sudoers
 chattr +i /etc/sudoers
 
 # Clear cronjobs.
+chattr -i /etc/crontab
 echo "" > /etc/crontab
 chattr +i /etc/crontab
+chattr -i /etc/anacrontab
 echo "" > /etc/anacrontab
 chattr +i /etc/anacrontab
 
 # Check programs that have root privliges
-#find / -perm -04000
+find / -perm -04000 > programsWithRootAccess.txt
 
+# Remove existing ssh keys
+rm -rf ~/.ssh/*
 
-######### check dns servers
+# Check for users who should not have root privlages.
+groupadd -g 3000 badGroup
+while read line
+do
+    IFS=':' read -a userArray <<< "$line"
+    if [ ${userArray[0]} != "root" ]
+    then
+        # Check UID of users
+        userID=$(id -u "${userArray[0]}")
+        count=3000
+        if [  $userID -eq '0' ]
+        then
+            usermod -u $count ${userArray[0]}
+            $count++
+        fi
+
+        # Check GID of users
+        groupID=$(id -g "${userArray[0]}")
+        if [  $groupID -eq '0' ]
+        then
+            usermod -g 3000 ${userArray[0]}
+        fi
+    fi
+done < '/etc/passwd'
+
+# Remove users from the root group.
+rootGroup=$(awk -F':' '/root/{print $4}' /etc/group)
+for i in "${rootGroup[@]}"
+do
+    if [[ $i =~ ^$ ]]
+    then
+        continue
+    fi
+    usermod -a -G badGroup $i
+    gpasswd -d $i root
+done
+
+# Upgrade all packages.
+if [ $OS == 'ubuntu' ]; then
+    apt-get update
+    apt-get -y upgrade
+fi
+
+# Reboot the system
+reboot

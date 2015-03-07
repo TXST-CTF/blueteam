@@ -27,7 +27,7 @@ done < '/etc/passwd'
 rootGroup=$(awk -F':' '/root/{print $4}' /etc/group)
 for i in "${rootGroup[@]}"
 do
-    if [ ${rootGroup[$i]} == '' ]
+    if [[ $i =~ ^$ ]]
     then
         continue
     fi
