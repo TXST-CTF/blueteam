@@ -20,7 +20,7 @@ echo $VERSION
 echo 'nameserver 8.8.8.8' > /etc/resolv.conf
 echo 'nameserver 8.8.4.4' >> /etc/resolv.conf
 
-# Run the version of the script for ubuntu.
+# Fix package repositories for each os. 
 if [ $OS == 'ubuntu' ]; then
 	# Fix file repositories
 	mv /etc/apt/sources.list /etc/apt/sources.list.backup
@@ -28,6 +28,32 @@ if [ $OS == 'ubuntu' ]; then
 	echo "deb-src http://mirrors.us.kernel.org/ubuntu/ $VERSION main" >> /etc/apt/sources.list
 	echo "deb http://mirrors.us.kernel.org/ubuntu/ $VERSION-security main" >> /etc/apt/sources.list
     
+    # Update apt-get with the new sources.
+    apt-get update
+
+	# Reinstall passwd command and change root password.
+	apt-get --reinstall install -y passwd
+	passwd
+
+	# Reinstall crucial software.
+	apt-get --reinstall install -y bash
+	apt-get --reinstall install -y openssl
+	apt-get --reinstall install -y coreutils
+	apt-get --reinstall install -y vim
+	apt-get --reinstall install -y wget
+elif [ $OS == 'debian' ]; then
+	# Fix file repositories
+	mv /etc/apt/sources.list /etc/apt/sources.list.backup
+
+    echo "deb http://http.debian.net/debian $VERSION main" > /etc/apt/sources.list
+    echo "deb-src http://http.debian.net/debian $VERSION main" >> /etc/apt/sources.list
+   
+    echo "deb http://security.debian.org/ $VERSION/updates main" >> /etc/apt/sources.list
+    echo "deb-src http://security.debian.org/ $VERSION/updates main" >> /etc/apt/sources.list
+   
+    echo "deb http://http.debian.net/debian $VERSION-updates main" >> /etc/apt/sources.list
+    echo "deb-src http://http.debian.net/debian $VERSION-updates main" >> /etc/apt/sources.list
+
     # Update apt-get with the new sources.
     apt-get update
 
@@ -101,7 +127,7 @@ do
 done
 
 # Upgrade all packages.
-if [ $OS == 'ubuntu' ]; then
+if [[ $OS == 'ubuntu' || $OS == 'debian' ]]; then
     apt-get update
     apt-get -y upgrade
 fi
